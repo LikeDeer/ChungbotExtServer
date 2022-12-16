@@ -1,7 +1,11 @@
 package com.junhojeong.apiserver.dao;
 
 import com.google.api.core.ApiFuture;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.auth.*;
+import com.google.firebase.cloud.FirestoreClient;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.junhojeong.apiserver.model.Post;
@@ -16,7 +20,7 @@ public class PostDao {
     private DatabaseReference mDatabase;
 
     public PostDao() {
-        this.mDatabase = FirebaseDatabase.getInstance().getReference("Posts");
+        this.mDatabase = FirebaseDatabase.getInstance().getReference(COLLECTION_NAME);
     }
 
     public void setPost() throws Exception {
@@ -24,8 +28,14 @@ public class PostDao {
     }
 
     public List<Post> getPosts() throws Exception {
-        List<Post> posts = new ArrayList<>();
+        List<Post> list = new ArrayList<>();
+        Firestore db = FirestoreClient.getFirestore();
+        ApiFuture<QuerySnapshot> future = db.collection(COLLECTION_NAME).get();
+        List<QueryDocumentSnapshot> documents = future.get().getDocuments();
+        for (QueryDocumentSnapshot document : documents) {
+            list.add(document.toObject(Post.class));
+        }
 
-        return posts;
+        return list;
     }
 }
